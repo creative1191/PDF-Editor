@@ -1,7 +1,9 @@
 node_modules/
 build/
 dist/
+dist_electron/
 coverage/
+*.exe
 .DS_Store
 *.log
 .env*

@@ -18,6 +18,7 @@
   "build": {
     "appId": "com.winpdf.studio",
     "productName": "WinPDF Studio Pro",
+    "publish": null,
     "directories": {
       "output": "dist_electron"
     },

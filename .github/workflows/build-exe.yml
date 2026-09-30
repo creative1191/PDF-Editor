@@ -25,7 +25,9 @@ jobs:
         run: npm run build
 
       - name: Build Windows .exe Installer & Portable
-        run: npx --yes electron-builder --win nsis portable --config.electronVersion=33.2.0 --config.directories.output=dist_electron
+        run: npx --yes electron-builder --win nsis portable --publish never --config.electronVersion=33.2.0 --config.directories.output=dist_electron
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload .EXE as GitHub Artifact
         uses: actions/upload-artifact@v4
