@@ -1,0 +1,39 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install Electron & Electron-Builder
+        run: npm install --save-dev electron electron-builder
+
+      - name: Build Web Application
+        run: npm run build
+
+      - name: Build Windows .exe Installer
+        run: npx electron-builder --win nsis portable --config.main=electron-main.cjs --config.appId=com.winpdf.studio --config.productName="WinPDF Studio Pro" --config.directories.output=dist_electron
+
+      - name: Upload .EXE as GitHub Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WinPDF-Studio-Pro-Windows-EXE
+          path: dist_electron/*.exe
+          retention-days: 30
