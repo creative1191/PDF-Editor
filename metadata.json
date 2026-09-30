@@ -1,0 +1,6 @@
+{
+  "name": "WinPDF Studio Pro - Windows PDF Editor & OCR Suite",
+  "description": "Professional Windows PDF editor with in-place text & formatting editing, advanced OCR text recognition, annotation tools, and AES-256 password protection.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
