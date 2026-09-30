@@ -26,6 +26,7 @@ import { FindReplaceBar } from './components/FindReplaceBar';
 import { exportToPDFBlob, downloadBlob } from './utils/exportPdf';
 import { sanitizeDocument } from './utils/security';
 import { convertScannedPageToEditable, performOCR } from './utils/ocr';
+import { PDFDocument as PDFLibDoc } from 'pdf-lib';
 
 export default function App() {
   // Document state
@@ -221,8 +222,111 @@ export default function App() {
     setSelectedBlockId(null);
   };
 
-  // Open uploaded file (JSON project or image/scanned PDF)
-  const handleOpenFile = (file: File) => {
+  // Open uploaded file (JSON project, real PDF, or image/scanned PDF)
+  const handleOpenFile = async (file: File) => {
+    if (file.name.toLowerCase().endsWith('.pdf')) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const loadedPdf = await PDFLibDoc.load(arrayBuffer, { ignoreEncryption: true });
+        const pageCount = loadedPdf.getPageCount();
+        const title = loadedPdf.getTitle() || file.name;
+        const author = loadedPdf.getAuthor() || 'Windows User';
+
+        const pages: PDFPage[] = [];
+        for (let i = 0; i < pageCount; i++) {
+          const p = loadedPdf.getPage(i);
+          const { width, height } = p.getSize();
+          pages.push({
+            id: `page-import-${Date.now()}-${i}`,
+            pageNumber: i + 1,
+            width: Math.round(width) || 794,
+            height: Math.round(height) || 1123,
+            rotation: p.getRotation().angle || 0,
+            textBlocks: [
+              {
+                id: `tb-import-${Date.now()}-${i}-1`,
+                text: `${title} — Page ${i + 1}`,
+                x: 10,
+                y: 5.5,
+                width: 80,
+                height: 4,
+                fontSize: 16,
+                fontFamily: 'Segoe UI',
+                fontWeight: 'bold',
+                fontStyle: 'normal',
+                textDecoration: 'none',
+                color: '#1e3a8a',
+                textAlign: 'center',
+                lineHeight: 1.3,
+              },
+              {
+                id: `tb-import-${Date.now()}-${i}-2`,
+                text: 'PDF document loaded successfully. Use "Edit Text" to edit or format in-place, or "OCR & AI Tools" -> "Scan Page with OCR" to extract full text.',
+                x: 10,
+                y: 11,
+                width: 80,
+                height: 5,
+                fontSize: 11,
+                fontFamily: 'Segoe UI',
+                fontWeight: 'normal',
+                fontStyle: 'normal',
+                textDecoration: 'none',
+                color: '#475569',
+                textAlign: 'center',
+                lineHeight: 1.4,
+              },
+            ],
+            annotations: [],
+          });
+        }
+
+        const newDoc: PDFDocument = {
+          id: `doc-imported-${Date.now()}`,
+          title,
+          author,
+          createdAt: new Date().toISOString(),
+          modifiedAt: new Date().toISOString(),
+          version: 1,
+          security: {
+            isPasswordProtected: false,
+            encryptionLevel: 'AES-256',
+            isEncrypted: false,
+            permissions: {
+              printingAllowed: true,
+              copyingAllowed: true,
+              annotatingAllowed: true,
+              formFillingAllowed: true,
+              pageModificationsAllowed: true,
+            },
+            watermark: {
+              enabled: false,
+              text: 'CONFIDENTIAL',
+              opacity: 0.15,
+              fontSize: 48,
+              color: '#94a3b8',
+              rotation: -45,
+            },
+          },
+          pages: pages.length > 0 ? pages : [
+            {
+              id: `page-import-${Date.now()}-0`,
+              pageNumber: 1,
+              width: 794,
+              height: 1123,
+              rotation: 0,
+              textBlocks: [],
+              annotations: [],
+            }
+          ],
+        };
+        pushState(newDoc);
+        setCurrentPageIndex(0);
+        return;
+      } catch (pdfErr) {
+        console.warn('PDF direct load fallback:', pdfErr);
+      }
+    }
+
     const reader = new FileReader();
 
     if (file.name.endsWith('.json')) {

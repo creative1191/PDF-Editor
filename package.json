@@ -1,15 +1,36 @@
 {
-  "name": "react-example",
+  "name": "winpdf-studio-pro",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Professional Windows PDF Editor & OCR Suite",
+  "author": "creative1191",
+  "main": "electron-main.cjs",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build && esbuild server.ts --platform=node --target=node20 --format=esm --outfile=server.js",
     "start": "NODE_ENV=production node server.js",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "clean": "rm -rf dist server.js dist_electron",
+    "lint": "tsc --noEmit",
+    "package:win": "vite build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.winpdf.studio",
+    "productName": "WinPDF Studio Pro",
+    "directories": {
+      "output": "dist_electron"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "files": [
+      "dist/**/*",
+      "electron-main.cjs"
+    ]
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -29,6 +50,8 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.21",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
     "esbuild": "^0.25.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
